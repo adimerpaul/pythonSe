@@ -1,0 +1,26 @@
+# Carpetas de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Entornos virtuales
+venv/
+.env/
+.venv/
+
+# Configuración de editores
+.idea/
+.vscode/
+
+# Archivos de logs y caché
+*.log
+*.sqlite3
+db.sqlite3
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
