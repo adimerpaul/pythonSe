@@ -61,10 +61,12 @@ async def read_consulta():
             {columns[i]: str(row[i]).strip() if row[i] is not None else "" for i in range(len(columns))}
             for row in cursor.fetchall()
         ]
-        ficNros=[]
-
-        fichas = await connPg.fetch("SELECT * FROM hidrometros.ficha")
-        return result
+        ficNros=[row["fic_nros"] for row in result]
+        placeholders = ', '.join(f"${i+1}" for i in range(len(ficNros)))
+        query = f"SELECT fic_nros,fic_flag FROM hidrometros.ficha WHERE fic_nros IN ({placeholders})"
+#         query = f"UPDATE hidrometros.ficha SET fic_flag=true WHERExxx fic_nros IN ({placeholders})"
+        fichas = await connPg.fetch(query, *ficNros)
+        return fichas
     except Exception as e:
         return {"error": str(e)}
 
