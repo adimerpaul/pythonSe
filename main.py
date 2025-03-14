@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 import pyodbc
+import asyncio
+import asyncpg
 
 dns = 'selaFiles'
 usuario = ''
@@ -41,27 +43,31 @@ def read_root():
     return {"message": "API para consultar la tabla puntcons"}
 
 @app.get("/consulta")
-def read_consulta():
+async def read_consulta():
     try:
-        conn = pyodbc.connect(f'DSN={dns};UID={usuario};PWD={password}')
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM puntcons")
+        connPg = await asyncpg.connect(
+                    user="seladeveloper",
+                    password="rootsela",
+                    database="seladb",
+                    host="192.168.1.31",
+                    port=5432
+                )
+        connDbf = pyodbc.connect(f'DSN={dns};UID={usuario};PWD={password}')
+        cursor = connDbf.cursor()
 
-        # Obtener nombres de columnas
+        cursor.execute("SELECT fic_nros,fic_flag FROM ficha where fic_nros like 'N25%' and fic_flag=.T.")
         columns = [column[0] for column in cursor.description]
-
-        # Convertir datos en lista de diccionarios, aplicando `strip` para quitar espacios
         result = [
             {columns[i]: str(row[i]).strip() if row[i] is not None else "" for i in range(len(columns))}
             for row in cursor.fetchall()
         ]
+        ficNros=[]
 
-        cursor.close()
-        conn.close()
-
-        return {"data": result}
+        fichas = await connPg.fetch("SELECT * FROM hidrometros.ficha")
+        return result
     except Exception as e:
         return {"error": str(e)}
+
 
 class SQLQuery(BaseModel):
     sql: str
