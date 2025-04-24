@@ -3,7 +3,7 @@ import asyncpg
 from app.models.sql_query import SQLQuery
 class BaseController:
     def __init__(self):
-        self.dns = 'selaFiles'
+        self.dns = 'selaPrueba'
         self.usuario = ''
         self.password = ''
         self.pg_config = {

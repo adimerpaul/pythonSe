@@ -2,6 +2,9 @@ from fastapi import HTTPException
 from app.controllers.base_controller import BaseController
 from app.models.sql_query import SQLQuery
 from app.models.sql_query import GetConsumoAgua
+from app.models.sql_query import PagarConsumoAgua
+from datetime import datetime
+from datetime import timedelta
 
 class ConsultasController(BaseController):
     def get_count(self):
@@ -46,6 +49,9 @@ class ConsultasController(BaseController):
             conn = self.get_dbf_connection()
             cursor = conn.cursor()
             cursor.execute(sql_query.sql)
+            if cursor.description is None:
+                conn.commit()
+                return {"data": "Query executed successfully."}
 
             columns = [column[0] for column in cursor.description]
 
@@ -169,7 +175,7 @@ class ConsultasController(BaseController):
         }
 
     def datosFactura(self, data, montoFormulario):
-        print(f"DEBUG - Datos de la factura: {data.get('nrofactura')}")
+#         print(f"DEBUG - Datos de la factura: {data.get('nrofactura')}")
         return {
             "selected": data.get('selected', 1),
             "pla_nume": data.get('pla_nume'),
@@ -297,10 +303,41 @@ class ConsultasController(BaseController):
                 cursor.close()
             if 'conn' in locals():
                 conn.close()
+    def execute_pagarConsumo(self, pagarConsumoAgua: PagarConsumoAgua):
+        try:
+#                         $fecha_pago = date('Y-m-d');
+#
+#                         $fechaFin = date("Y-m-d H:i:s", strtotime($fecha_pago ));
+#                         $fechaFin1 = strtotime('+23 hour', strtotime($fechaFin));
+#                         $fechaFin2 = date("Y-m-d H:i:s", $fechaFin1);
+#
+#                         $fechaInicio = date("Y-m-d H:i:s", strtotime($fecha_pago));
 
+#             $fechaHora = date("Y-m-d H:i:s A");
+#             $fechaPago = date("Y-m-d");
+#             $matricula = substr($cuenta, 0, -1);
+#             $digito = substr($cuenta, -1);
+#             $facturasComa = implode(",", $nfacs);
+
+            fecha_pago = datetime.now().strftime("%Y-%m-%d")
+            fechaFin = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            fechaFin1 = datetime.strptime(fechaFin, "%Y-%m-%d %H:%M:%S") + timedelta(hours=23)
+            fechaFin2 = fechaFin1.strftime("%Y-%m-%d %H:%M:%S")
+            fechaInicio = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+#             cuenta = pagarConsumoAgua.cuenta
+            return { "success": 1, "message": "" }
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+        finally:
+            if 'cursor' in locals():
+               cursor.close()
+            if 'conn' in locals():
+               conn.close()
 # Instancias para exportar
 controller = ConsultasController()
 get_count = controller.get_count
 read_consulta = controller.read_consulta
 execute_query = controller.execute_query
 execute_getConsumoAgua = controller.execute_getConsumoAgua
+execute_pagarConsumo = controller.execute_pagarConsumo
